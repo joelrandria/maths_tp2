@@ -17,7 +17,11 @@ public:
     EdgeFT();
     EdgeFT(const Edge& edge);
 
+    const std::vector<std::complex<double> >& fourierCoefficients() const { return m_fourierCoefficients; }
+
     Edge edge() const;
+
+    void lowPassFilter(float percentThreshold);
 
     void print() const;
 

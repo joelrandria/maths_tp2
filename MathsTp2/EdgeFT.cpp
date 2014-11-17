@@ -7,8 +7,6 @@ EdgeFT::EdgeFT()
 }
 EdgeFT::EdgeFT(const Edge &edge)
 {
-//    edge.print();
-
     const std::vector<std::complex<double> > edgeValues = edge.constValues();
     int edgeValueCount = edgeValues.size();
 
@@ -17,8 +15,6 @@ EdgeFT::EdgeFT(const Edge &edge)
     int rangeStart = -edgeValueCount / 2;
     int rangeEnd = edgeValueCount % 2 ? edgeValueCount / 2 : (edgeValueCount / 2) - 1;
     ++rangeEnd;
-
-//    qDebug() << QString("FT sur [%1,%2[").arg(rangeStart).arg(rangeEnd);
 
     for (int m = rangeStart; m < rangeEnd; ++m)
     {
@@ -29,15 +25,6 @@ EdgeFT::EdgeFT(const Edge &edge)
 
         m_fourierCoefficients[m >= 0 ? m : (int)m_fourierCoefficients.size() + m] = sum / (double)edgeValues.size();
     }
-
-//    qDebug() << "---------------- FT ----------------";
-
-//    for (int i = 0; i < (int)m_fourierCoefficients.size(); ++i)
-//        qDebug() << QString("<%1,%2>")
-//                    .arg(m_fourierCoefficients[i].real())
-//                    .arg(m_fourierCoefficients[i].imag());
-
-//    qDebug() << "------------------------------------";
 }
 Edge EdgeFT::edge() const
 {
@@ -45,11 +32,11 @@ Edge EdgeFT::edge() const
 
     int fourierCoefficientCount = (int)m_fourierCoefficients.size();
 
+    rebuiltEdge.m_values.reserve(fourierCoefficientCount);
+
     int rangeStart = -fourierCoefficientCount / 2;
     int rangeEnd = fourierCoefficientCount % 2 ? fourierCoefficientCount / 2 : (fourierCoefficientCount / 2) - 1;
     ++rangeEnd;
-
-//    qDebug() << QString("FT inverse sur [%1,%2[").arg(rangeStart).arg(rangeEnd);
 
     for (int n = 0; n < (int)m_fourierCoefficients.size(); ++n)
     {
@@ -67,17 +54,26 @@ Edge EdgeFT::edge() const
             sum += sm * exp(std::complex<double>(0, 2 * M_PI * m * n / (int)m_fourierCoefficients.size()));
         }
 
-        rebuiltEdge.values().push_back(sum);
+        rebuiltEdge.m_values.push_back(sum);
     }
 
-//    qDebug() << "---------------- FT-1 ----------------";
-
-//    for (int i = 0; i < (int)rebuiltEdge.values().size(); ++i)
-//        qDebug() << QString("<%1,%2>")
-//                    .arg(rebuiltEdge.values()[i].real())
-//                    .arg(rebuiltEdge.values()[i].imag());
-
-//    qDebug() << "---------------------------------------";
-
     return rebuiltEdge;
+}
+
+void EdgeFT::lowPassFilter(float percentThreshold)
+{
+    if (percentThreshold == 100)
+        m_fourierCoefficients.clear();
+
+    int halfSize = m_fourierCoefficients.size() / 2;
+    int maxFreqIndex = m_fourierCoefficients.size() / 2;
+    int removeRangeWidth = (int)(percentThreshold * (float)halfSize / 100.f);
+
+    qDebug() << QString("%1 frequences à mettre à 0").arg(removeRangeWidth * 2 + 1);
+
+    for (int i = 0; i < removeRangeWidth; ++i)
+    {
+        m_fourierCoefficients[maxFreqIndex - i] = 0;
+        m_fourierCoefficients[maxFreqIndex + i] = 0;
+    }
 }

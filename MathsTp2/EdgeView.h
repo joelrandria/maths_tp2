@@ -4,6 +4,7 @@
 #include "Edge.h"
 #include "EdgeFT.h"
 
+#include <QPoint>
 #include <QGraphicsView>
 
 class EdgeView : public QGraphicsView
@@ -12,11 +13,13 @@ class EdgeView : public QGraphicsView
 
 private:
 
+    QPoint m_lastSelectedPoint;
+
     Edge m_edge;
     QColor m_edgeColor;
 
-    EdgeFT m_edgeFT;
-    QColor m_edgeFTColor;
+    Edge m_filteredEdge;
+    QColor m_filteredEdgeColor;
 
 public:
 
@@ -24,6 +27,10 @@ public:
 
     void paintEvent(QPaintEvent* event);
     void mouseReleaseEvent(QMouseEvent *event);
+
+    void applyLowPassFilter(float percentThreshold);
+
+    void reset();
 
 private:
 
